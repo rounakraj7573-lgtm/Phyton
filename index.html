@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827"><meta name="description" content="A simple online Python code editor. Write, run and experiment with Python in your browser.">
+<title>PyStudio — Online Python Editor</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1120;--panel:#111a2b;--panel2:#172338;--line:#26354d;--text:#e8eef8;--muted:#91a2bc;--accent:#78a9ff;--green:#65d6a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#14213b 0,#0b1120 55%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+header{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);border-bottom:1px solid #26354d;background:#0b1120cc;position:sticky;top:0;z-index:2;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:11px;font-size:18px;font-weight:750;letter-spacing:-.4px}.logo{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#80b4ff,#8c7bff);color:#071226;font-weight:900;font-size:16px}.tag{color:var(--muted);font-size:12px;border:1px solid var(--line);padding:5px 9px;border-radius:99px}
+main{max-width:1200px;margin:auto;padding:34px clamp(14px,3vw,32px) 50px}.intro{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.eyebrow{color:var(--green);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;font-weight:750}.intro h1{font-size:clamp(26px,4vw,38px);letter-spacing:-1.3px;line-height:1.1;margin:8px 0}.intro p{color:var(--muted);margin:10px 0 0;max-width:580px}
+.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 15px;border-radius:10px;font-weight:650;cursor:pointer;font:inherit;font-size:13px;transition:.15s}.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn:disabled{opacity:.55;cursor:wait;transform:none}.btn-run{background:var(--green);border-color:var(--green);color:#062015}.workspace{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:16px;align-items:stretch}.panel{border:1px solid var(--line);background:#111a2bf2;border-radius:15px;overflow:hidden;min-width:0;box-shadow:0 18px 50px #0002}.panel-head{height:53px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:10px}.panel-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}.panel-sub{color:var(--muted);font-size:12px}
+.editor-wrap{display:flex;min-height:410px;background:#0c1423}.gutter{padding:18px 12px;color:#52647e;text-align:right;white-space:pre;user-select:none;font:13px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;border-right:1px solid #1c2a40;min-width:43px}.editor{width:100%;min-height:410px;resize:vertical;border:0;outline:0;padding:18px 16px;background:transparent;color:#dce8fa;font:13px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:4;white-space:pre;overflow:auto}.editor:focus{box-shadow:inset 0 0 0 1px #78a9ff22}.editor-foot{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.output{min-height:410px;padding:17px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d3e0f3}.output.empty{color:#687b96}.output .error{color:#ff9a9a}.output .success{color:var(--green)}.output-status{display:flex;align-items:center;gap:7px}.status-dot{width:7px;height:7px;border-radius:50%;background:#77869d}.status-dot.ready{background:var(--green)}.status-dot.busy{background:#f2c46d;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.35}}
+.examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center}.examples span{color:var(--muted);font-size:12px;margin-right:3px}.chip{background:transparent;border:1px solid var(--line);border-radius:99px;color:#bdcbe0;padding:6px 11px;cursor:pointer;font-size:12px}.chip:hover{border-color:var(--accent);color:white}.note{margin-top:18px;color:var(--muted);font-size:12px;display:flex;gap:8px;align-items:flex-start}.note svg{flex:none;margin-top:2px}
+footer{text-align:center;color:#64758e;font-size:11px;padding:25px 16px 30px}
+@media(max-width:800px){.intro{align-items:flex-start;flex-direction:column}.workspace{grid-template-columns:1fr}.editor-wrap,.editor,.output{min-height:330px}.panel-head{height:49px}header{height:62px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">Py</div><span>PyStudio</span></div><span class="tag">Python in your browser</span></header>
+<main>
+<section class="intro"><div><div class="eyebrow">Your coding playground</div><h1>Write Python. Run it instantly.</h1><p>A clean, simple place to experiment with Python code. No installation required — your code runs locally in your browser.</p></div><div class="actions"><button class="btn" id="resetBtn" type="button">↺ Reset</button><button class="btn btn-run" id="runBtn" type="button">▶ &nbsp;Run code</button></div></section>
+<section class="workspace" aria-label="Python editor and output">
+<div class="panel"><div class="panel-head"><div class="panel-title"><span style="color:#78a9ff">⌘</span> main.py</div><span class="panel-sub">Python 3 · Pyodide</span></div>
+<div class="editor-wrap"><div class="gutter" id="gutter">1
+2
+3
+4
+5
+6
+7
+8</div><textarea class="editor" id="code" aria-label="Python code editor" spellcheck="false" autocapitalize="off" autocomplete="off"># Welcome to PyStudio!
+name = "World"
+print(f"Hello, {name}!")
+
+# Try changing the name or adding more code
+for number in range(1, 4):
+    print(f"Count: {number}")</textarea></div>
+<div class="editor-foot"><span id="lineInfo">8 lines</span><span>Tab to indent · Ctrl/⌘ + Enter to run</span></div></div>
+<div class="panel"><div class="panel-head"><div class="panel-title"><span style="color:var(--green)">›_</span> Output</div><div class="output-status"><span class="status-dot" id="statusDot"></span><span class="panel-sub" id="statusText">Ready to run</span></div></div><div class="output empty" id="output" role="status" aria-live="polite">Your output will appear here.
+
+Press “Run code” to start the Python runtime. The first run may take a few seconds.</div><div class="editor-foot"><span id="runtimeInfo">Runtime loads on first run</span><span>Browser-based</span></div></div>
+</section>
+<div class="examples"><span>Try an example:</span><button class="chip" data-example="hello">Hello world</button><button class="chip" data-example="loop">Loops</button><button class="chip" data-example="math">Math</button><button class="chip" data-example="list">Lists</button><button class="chip" data-example="function">Functions</button></div>
+<div class="note"><span>ⓘ</span><span>Python runs in your browser using Pyodide. The first run downloads the runtime and may take a little while. Avoid entering secrets or passwords into code you share.</span></div>
+</main><footer>PyStudio · A little space to build something great.</footer>
+<script>
+(() => {
+const codeEl=document.getElementById('code'),out=document.getElementById('output'),runBtn=document.getElementById('runBtn'),resetBtn=document.getElementById('resetBtn'),gutter=document.getElementById('gutter'),lineInfo=document.getElementById('lineInfo'),statusDot=document.getElementById('statusDot'),statusText=document.getElementById('statusText'),runtimeInfo=document.getElementById('runtimeInfo');
+const initial=codeEl.value; let pyodidePromise=null;
+const examples={
+hello:'name = input("What is your name? ")\nprint(f"Hello, {name}!")',
+loop:'for i in range(1, 6):\n    print(f"Square of {i} is {i * i}")',
+math:'import math\nfor angle in [0, 30, 45, 60, 90]:\n    print(f"sin({angle}°) = {math.sin(math.radians(angle)):.3f}")',
+list:'fruits = ["apple", "banana", "mango"]\nfruits.append("orange")\nfor fruit in fruits:\n    print("🍎", fruit)\nprint("Total:", len(fruits))',
+function:'def fibonacci(n):\n    a, b = 0, 1\n    result = []\n    for _ in range(n):\n        result.append(a)\n        a, b = b, a + b\n    return result\n\nprint(fibonacci(10))'
+};
+function updateLines(){const n=codeEl.value.split('\n').length;gutter.textContent=Array.from({length:n},(_,i)=>i+1).join('\n');lineInfo.textContent=n+' line'+(n===1?'':'s')}
+function setStatus(text,state=''){statusText.textContent=text;statusDot.className='status-dot '+state}
+function writeOutput(text,kind=''){out.className='output'+(kind?' '+kind:'');out.textContent=text}
+async function getPyodide(){if(!pyodidePromise){runtimeInfo.textContent='Downloading Python runtime…';pyodidePromise=(async()=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';document.head.appendChild(s);await new Promise((resolve,reject)=>{s.onload=resolve;s.onerror=()=>reject(new Error('Could not load Pyodide. Check your internet connection and try again.'))});return await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'})})().catch(e=>{pyodidePromise=null;throw e})}return pyodidePromise}
+async function runCode(){runBtn.disabled=true;runBtn.textContent='Running…';setStatus('Starting Python','busy');writeOutput('Starting Python runtime…','empty');try{const py=await getPyodide();runtimeInfo.textContent='Python runtime loaded';let stdout=[],stderr=[];py.setStdout({batched:s=>stdout.push(s)});py.setStderr({batched:s=>stderr.push(s)});py.setStdin({stdin:()=>{const answer=window.prompt('Python input() — enter a value:');return answer===null?'':answer}});try{await py.runPythonAsync(codeEl.value);const result=stdout.join('')+(stderr.length?'\n'+stderr.join(''):'');writeOutput(result||'Code finished successfully (no output).',result?'':'success');setStatus('Finished','ready')}catch(e){writeOutput((stdout.join('')?stdout.join('')+'\n':'')+String(e),'error');setStatus('Error','')} }catch(e){writeOutput(String(e),'error');setStatus('Runtime unavailable','');runtimeInfo.textContent='Could not load runtime'}finally{runBtn.disabled=false;runBtn.innerHTML='▶ &nbsp;Run code'}}
+runBtn.addEventListener('click',runCode);resetBtn.addEventListener('click',()=>{codeEl.value=initial;updateLines();writeOutput('Editor reset. Press “Run code” to execute.','empty');setStatus('Ready to run');runtimeInfo.textContent='Runtime loads on first run'});codeEl.addEventListener('input',updateLines);codeEl.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const a=codeEl.selectionStart,b=codeEl.selectionEnd;codeEl.setRangeText('    ',a,b,'end');updateLines()}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runCode()}});
+document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>{codeEl.value=examples[btn.dataset.example];updateLines();codeEl.focus();writeOutput('Example loaded. Press “Run code” to execute.','empty');setStatus('Ready to run')}));
+updateLines();
+})();
+</script>
+</body></html>
