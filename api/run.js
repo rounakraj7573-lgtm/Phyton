@@ -83,7 +83,7 @@ export default async function handler(request, response) {
       }]);
       const result = await sandbox.runCommand({
         cmd: "python",
-        args: ["-I", "/vercel/sandbox/main.py"]
+        args: ["/vercel/sandbox/main.py"]
       });
       const stdout = (await result.stdout()).slice(0, MAX_OUTPUT_CHARS);
       const stderr = (await result.stderr()).slice(0, MAX_OUTPUT_CHARS);
