@@ -1,40 +1,29 @@
-# PyStudio Python Runner (Docker host required)
+# PyStudio Python Runner
 
-This service executes submitted Python code in a disposable Docker container.
-It is designed for a dedicated host with Docker installed; it is **not** a
-normal Vercel serverless function. Do not expose it publicly until TLS,
-origin allow-listing, request limits, monitoring, and host-level isolation are
-configured.
+The recommended runner endpoint is now `/api/run` at the project root. It uses
+Vercel Sandbox to execute submitted Python code in a short-lived, isolated
+microVM rather than executing it on the website visitor's phone.
 
-## Build the runner image
+## Deployment notes
 
-From the repository root:
+1. Import this GitHub repository into Vercel (or redeploy the existing project).
+2. Ensure the project is using a current Node.js runtime and has access to
+   Vercel Sandbox. The `@vercel/sandbox` package is declared in root
+   `package.json`; Sandbox authentication is provided automatically in
+   production on Vercel.
+3. In Vercel Project Settings, set `ALLOWED_ORIGINS` to the exact production
+   website origin, for example `https://your-project.vercel.app`. This is
+   an optional extra origin check, not authentication or a complete abuse
+   prevention system.
+4. Deploy and test `/api/run` with a small Python program that prints output.
+5. Add a managed rate limit/abuse protection before inviting public users.
 
-```sh
-docker build -t pystudio-python-runner:latest -f backend/Runner.Dockerfile .
-```
+The API currently executes Python 3.13 in an isolated Sandbox, limits submitted
+code to 12,000 characters, truncates output, and requests a 30-second sandbox
+timeout. This first version does not preinstall all PyPI packages. Common
+scientific libraries and arbitrary `pip install` support need a separate
+dependency strategy and testing. Never promise compatibility with every PyPI
+package.
 
-## Install and start the API
-
-```sh
-python -m venv .venv
-. .venv/bin/activate
-pip install -r backend/requirements.txt
-ALLOWED_ORIGINS=https://YOUR-VERCEL-DOMAIN.vercel.app uvicorn backend.main:app --host 0.0.0.0 --port 8000
-```
-
-The API host must have access to the Docker daemon and the runner image built
-above. Use a dedicated VM/host; Docker access is highly privileged. Put the API
-behind HTTPS and a managed rate limiter, and configure the exact deployed
-frontend origin in `ALLOWED_ORIGINS`.
-
-- `GET /health` checks service status.
-- `POST /run` JSON body: `{"code":"print('Hello')"}`.
-- Responses contain `stdout`, `stderr`, and `exit_code`.
-
-The runner includes common packages (NumPy, Pandas, Matplotlib, SciPy, SymPy,
-scikit-learn, Pillow, Requests). This is not every PyPI package. Add vetted
-dependencies to `Runner.Dockerfile` and rebuild the image when needed.
-
-The frontend still needs the deployed API URL configured before browser runs
-are routed here. Do not put private API keys in frontend JavaScript.
+Do not expose secrets in frontend code. Sandbox usage and deployments may incur
+charges depending on the Vercel plan and workload.
