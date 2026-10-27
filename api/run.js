@@ -1,6 +1,6 @@
 import { Sandbox } from "@vercel/sandbox";
 
-const RUNNER_VERSION = "sandbox-plot-output-v6";
+const RUNNER_VERSION = "sandbox-plot-output-v7";
 const MAX_CODE_CHARS = 12000;
 const MAX_OUTPUT_CHARS = 16000;
 const PACKAGE_IMPORTS = [
@@ -89,6 +89,7 @@ export default async function handler(request, response) {
         "finally:",
         "    try:",
         "        import matplotlib.pyplot as plt",
+        "        plt.show = lambda *args, **kwargs: None",
         "        for number in plt.get_fignums():",
         "            figure = plt.figure(number)",
         "            image = io.BytesIO()",
