@@ -1,6 +1,6 @@
 import { Sandbox } from "@vercel/sandbox";
 
-const RUNNER_VERSION = "sandbox-pip-install-v5";
+const RUNNER_VERSION = "sandbox-plot-output-v6";
 const MAX_CODE_CHARS = 12000;
 const MAX_OUTPUT_CHARS = 16000;
 const PACKAGE_IMPORTS = [
@@ -77,20 +77,47 @@ export default async function handler(request, response) {
           });
         }
       }
-      await sandbox.writeFiles([{
-        path: "/vercel/sandbox/main.py",
-        content: Buffer.from(code, "utf8")
-      }]);
+      const wrapper = [
+        "import base64, io, runpy",
+        "try:",
+        "    import matplotlib",
+        "    matplotlib.use('Agg')",
+        "except ImportError:",
+        "    pass",
+        "try:",
+        "    runpy.run_path('/vercel/sandbox/main.py', run_name='__main__')",
+        "finally:",
+        "    try:",
+        "        import matplotlib.pyplot as plt",
+        "        for number in plt.get_fignums():",
+        "            figure = plt.figure(number)",
+        "            image = io.BytesIO()",
+        "            figure.savefig(image, format='png', bbox_inches='tight', dpi=130)",
+        "            print('\\n__PYSTUDIO_IMAGE__:' + base64.b64encode(image.getvalue()).decode('ascii'))",
+        "            plt.close(figure)",
+        "    except ImportError:",
+        "        pass"
+      ].join("\n");
+      await sandbox.writeFiles([
+        { path: "/vercel/sandbox/main.py", content: Buffer.from(code, "utf8") },
+        { path: "/vercel/sandbox/runner.py", content: Buffer.from(wrapper, "utf8") }
+      ]);
       const result = await sandbox.runCommand({
         cmd: "python",
-        args: ["/vercel/sandbox/main.py"]
+        args: ["/vercel/sandbox/runner.py"]
       });
-      const stdout = (await result.stdout()).slice(0, MAX_OUTPUT_CHARS);
+      let stdout = await result.stdout();
       const stderr = (await result.stderr()).slice(0, MAX_OUTPUT_CHARS);
+      const images = [];
+      stdout = stdout.replace(/\n?__PYSTUDIO_IMAGE__:([A-Za-z0-9+/=]+)/g, (_, image) => {
+        if (images.length < 4) images.push(image);
+        return "";
+      }).slice(0, MAX_OUTPUT_CHARS);
       const payload = {
         runner_version: RUNNER_VERSION,
         stdout,
         stderr,
+        images,
         exit_code: result.exitCode
       };
       if (origin && ALLOWED_ORIGINS.includes(origin)) {
