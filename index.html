@@ -52,14 +52,14 @@ Press “Run code” to start the Python runtime. The first run may take a few s
 const codeEl=document.getElementById('code'),out=document.getElementById('output'),runBtn=document.getElementById('runBtn'),resetBtn=document.getElementById('resetBtn'),gutter=document.getElementById('gutter'),lineInfo=document.getElementById('lineInfo'),statusDot=document.getElementById('statusDot'),statusText=document.getElementById('statusText'),runtimeInfo=document.getElementById('runtimeInfo');
 const initial=codeEl.value; let pyodidePromise=null;
 const packageMap=[
-  {pattern:/\\b(?:import\\s+numpy|from\\s+numpy\\b)/,name:'numpy'},
-  {pattern:/\\b(?:import\\s+pandas|from\\s+pandas\\b)/,name:'pandas'},
-  {pattern:/\\b(?:import\\s+matplotlib|from\\s+matplotlib\\b)/,name:'matplotlib'},
-  {pattern:/\\b(?:import\\s+scipy|from\\s+scipy\\b)/,name:'scipy'},
-  {pattern:/\\b(?:import\\s+sympy|from\\s+sympy\\b)/,name:'sympy'},
-  {pattern:/\\b(?:import\\s+sklearn|from\\s+sklearn\\b)/,name:'scikit-learn'},
-  {pattern:/\\b(?:from\\s+PIL\\b|import\\s+PIL\\b)/,name:'pillow'},
-  {pattern:/\\b(?:import\\s+requests|from\\s+requests\\b)/,name:'requests'}
+  {pattern:/\b(?:import\s+numpy|from\s+numpy\b)/,name:'numpy'},
+  {pattern:/\b(?:import\s+pandas|from\s+pandas\b)/,name:'pandas'},
+  {pattern:/\b(?:import\s+matplotlib|from\s+matplotlib\b)/,name:'matplotlib'},
+  {pattern:/\b(?:import\s+scipy|from\s+scipy\b)/,name:'scipy'},
+  {pattern:/\b(?:import\s+sympy|from\s+sympy\b)/,name:'sympy'},
+  {pattern:/\b(?:import\s+sklearn|from\s+sklearn\b)/,name:'scikit-learn'},
+  {pattern:/\b(?:from\s+PIL\b|import\s+PIL\b)/,name:'pillow'},
+  {pattern:/\b(?:import\s+requests|from\s+requests\b)/,name:'requests'}
 ];
 async function loadPackagesForCode(py,source){
  const needed=packageMap.filter(p=>p.pattern.test(source)).map(p=>p.name);
