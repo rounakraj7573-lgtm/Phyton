@@ -74,7 +74,7 @@ function:'def fibonacci(n):\n    a, b = 0, 1\n    result = []\n    for _ in rang
 };
 function updateLines(){const n=codeEl.value.split('\n').length;gutter.textContent=Array.from({length:n},(_,i)=>i+1).join('\n');lineInfo.textContent=n+' line'+(n===1?'':'s')}
 function setStatus(text,state=''){statusText.textContent=text;statusDot.className='status-dot '+state}
-function writeOutput(text,kind=''){out.className='output'+(kind?' '+kind:'');out.textContent=text}
+function writeOutput(text,kind='',images=[]){out.className='output'+(kind?' '+kind:'');out.replaceChildren();if(text){const pre=document.createElement('div');pre.textContent=text;out.appendChild(pre)}images.forEach((image,index)=>{const img=document.createElement('img');img.src='data:image/png;base64,'+image;img.alt='Python-generated plot '+(index+1);img.style.cssText='display:block;max-width:100%;height:auto;margin:16px auto;border:1px solid #26354d;border-radius:8px;background:white';out.appendChild(img)})}
 async function runCode(){
  runBtn.disabled=true;runBtn.textContent='Running…';setStatus('Sending code to secure Python runner','busy');writeOutput('Starting remote Python runner…','empty');
  try{
@@ -83,7 +83,8 @@ async function runCode(){
   if(!response.ok)throw new Error(data.error||data.detail||('Request failed ('+response.status+').'));
   const stdout=data.stdout||'',stderr=data.stderr||'';
   const result=stdout+(stderr?(stdout?'\\n':'')+stderr:'');
-  writeOutput(result|| (data.exit_code===0?'Code finished successfully (no output).':'Python exited with code '+data.exit_code+'.'),data.exit_code===0&&!stderr?'success':(data.exit_code===0?'':'error'));
+  const hasImages=Array.isArray(data.images)&&data.images.length>0;
+  writeOutput(result|| (hasImages?'':data.exit_code===0?'Code finished successfully (no output).':'Python exited with code '+data.exit_code+'.'),data.exit_code===0&&!stderr?'success':(data.exit_code===0?'':'error'),data.images||[]);
   setStatus(data.exit_code===0?'Finished':'Error',data.exit_code===0?'ready':'');
   runtimeInfo.textContent='Remote runner: '+(data.runner_version||'version not reported');
  }catch(e){
