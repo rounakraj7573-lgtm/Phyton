@@ -1,0 +1,8 @@
+{
+  "name": "pystudio",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/sandbox": "^1.4.0"
+  }
+}
