@@ -49,7 +49,9 @@ export default async function handler(request, response) {
 
     const sandbox = await Sandbox.create({
       runtime: "python3.13",
-      timeout: 120000
+      timeout: 120000,
+      networkPolicy: "allow-all",
+      persistent: false
     });
 
     try {
