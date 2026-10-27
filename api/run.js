@@ -1,5 +1,6 @@
 import { Sandbox } from "@vercel/sandbox";
 
+const RUNNER_VERSION = "sandbox-pip-v3";
 const MAX_CODE_CHARS = 12000;
 const MAX_OUTPUT_CHARS = 16000;
 const PACKAGE_IMPORTS = [
@@ -68,6 +69,7 @@ export default async function handler(request, response) {
         if (install.exitCode !== 0) {
           const installError = (await install.stderr()).slice(0, 4000);
           return response.status(200).json({
+            runner_version: RUNNER_VERSION,
             stdout: "",
             stderr: "Could not install required package(s): " + packages.join(", ") +
               "\n" + installError,
@@ -86,6 +88,7 @@ export default async function handler(request, response) {
       const stdout = (await result.stdout()).slice(0, MAX_OUTPUT_CHARS);
       const stderr = (await result.stderr()).slice(0, MAX_OUTPUT_CHARS);
       const payload = {
+        runner_version: RUNNER_VERSION,
         stdout,
         stderr,
         exit_code: result.exitCode
@@ -101,6 +104,7 @@ export default async function handler(request, response) {
   } catch (error) {
     console.error("Python execution failed:", error);
     return response.status(500).json({
+      runner_version: RUNNER_VERSION,
       error: "Python runner could not start. Check the Vercel Sandbox setup and logs."
     });
   }
