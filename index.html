@@ -20,11 +20,11 @@ footer{text-align:center;color:#64758e;font-size:11px;padding:25px 16px 30px}
 </style>
 </head>
 <body>
-<header><div class="brand"><div class="logo">Py</div><span>PyStudio</span></div><span class="tag">Python in your browser</span></header>
+<header><div class="brand"><div class="logo">Py</div><span>PyStudio</span></div><span class="tag">Remote Python 3</span></header>
 <main>
 <section class="intro"><div><div class="eyebrow">Your coding playground</div><h1>Write Python. Run it instantly.</h1><p>A clean, simple place to experiment with Python code. No installation required — your code runs on a remote Python server.</p></div><div class="actions"><button class="btn" id="resetBtn" type="button">↺ Reset</button><button class="btn btn-run" id="runBtn" type="button">▶ &nbsp;Run code</button></div></section>
 <section class="workspace" aria-label="Python editor and output">
-<div class="panel"><div class="panel-head"><div class="panel-title"><span style="color:#78a9ff">⌘</span> main.py</div><span class="panel-sub">Python 3 · Pyodide</span></div>
+<div class="panel"><div class="panel-head"><div class="panel-title"><span style="color:#78a9ff">⌘</span> main.py</div><span class="panel-sub">Python 3 · Cloud server</span></div>
 <div class="editor-wrap"><div class="gutter" id="gutter">1
 2
 3
@@ -42,7 +42,7 @@ for number in range(1, 4):
 <div class="editor-foot"><span id="lineInfo">8 lines</span><span>Tab to indent · Ctrl/⌘ + Enter to run</span></div></div>
 <div class="panel"><div class="panel-head"><div class="panel-title"><span style="color:var(--green)">›_</span> Output</div><div class="output-status"><span class="status-dot" id="statusDot"></span><span class="panel-sub" id="statusText">Ready to run</span></div></div><div class="output empty" id="output" role="status" aria-live="polite">Your output will appear here.
 
-Press “Run code” to start the Python runtime. The first run may take a few seconds.</div><div class="editor-foot"><span id="runtimeInfo">Runtime loads on first run</span><span>Browser-based</span></div></div>
+Press “Run code” to start the Python runtime. The first run may take a few seconds.</div><div class="editor-foot"><span id="runtimeInfo">Runs on remote server</span><span>Cloud execution</span></div></div>
 </section>
 <div class="examples"><span>Try an example:</span><button class="chip" data-example="hello">Hello world</button><button class="chip" data-example="loop">Loops</button><button class="chip" data-example="math">Math</button><button class="chip" data-example="list">Lists</button><button class="chip" data-example="function">Functions</button></div>
 <div class="note"><span>ⓘ</span><span>Python runs on a remote isolated server, not on your phone. Internet access is required. Avoid entering secrets or passwords into code you share.</span></div>
@@ -85,7 +85,7 @@ async function runCode(){
   const result=stdout+(stderr?(stdout?'\\n':'')+stderr:'');
   writeOutput(result|| (data.exit_code===0?'Code finished successfully (no output).':'Python exited with code '+data.exit_code+'.'),data.exit_code===0&&!stderr?'success':(data.exit_code===0?'':'error'));
   setStatus(data.exit_code===0?'Finished':'Error',data.exit_code===0?'ready':'');
-  runtimeInfo.textContent='Executed on remote Python server';
+  runtimeInfo.textContent='Remote runner: '+(data.runner_version||'version not reported');
  }catch(e){
   writeOutput(String(e.message||e),'error');setStatus('Runner unavailable','');runtimeInfo.textContent='Remote server not connected or deployment failed';
  }finally{runBtn.disabled=false;runBtn.innerHTML='▶ &nbsp;Run code'}
