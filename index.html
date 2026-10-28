@@ -83,13 +83,43 @@ function collectInputPrompts(source){
  return prompts;
 }
 async function runCode(){
- const inputs=[];
- for(const promptText of collectInputPrompts(codeEl.value)){
-  const value=window.prompt(promptText||"Enter a value for Python input:");
-  if(value===null){setStatus('Run cancelled');return}
-  inputs.push(value);
+ const prompts=collectInputPrompts(codeEl.value);
+ if(prompts.length){
+  out.className='output';
+  out.replaceChildren();
+  const heading=document.createElement('div');
+  heading.textContent='Python input';
+  heading.style.cssText='font:600 14px system-ui;margin-bottom:6px;color:#e8eef8';
+  const hint=document.createElement('div');
+  hint.textContent='Enter the values below, then tap Run.';
+  hint.style.cssText='font:12px system-ui;color:#91a2bc;margin-bottom:14px';
+  const form=document.createElement('form');
+  form.style.cssText='display:flex;flex-direction:column;gap:12px';
+  const fields=[];
+  prompts.forEach((promptText,index)=>{
+   const label=document.createElement('label');
+   label.textContent=promptText||('Input '+(index+1));
+   label.style.cssText='display:flex;flex-direction:column;gap:6px;font:12px system-ui;color:#bdcbe0';
+   const input=document.createElement('input');
+   input.type='text';input.autocomplete='off';input.placeholder='Type here…';
+   input.setAttribute('aria-label',label.textContent);
+   input.style.cssText='width:100%;min-width:0;padding:11px 12px;border:1px solid #344660;border-radius:9px;background:#0c1423;color:#e8eef8;font:14px system-ui;outline-color:#78a9ff';
+   label.appendChild(input);form.appendChild(label);fields.push(input);
+  });
+  const submit=document.createElement('button');
+  submit.type='submit';submit.textContent='▶  Run with this input';
+  submit.style.cssText='border:0;border-radius:9px;padding:11px 14px;background:#65d6a5;color:#062015;font:600 13px system-ui;cursor:pointer;margin-top:4px';
+  form.appendChild(submit);
+  form.addEventListener('submit',event=>{event.preventDefault();executeCode(fields.map(field=>field.value))});
+  out.append(heading,hint,form);
+  setStatus('Waiting for input');
+  fields[0].focus();
+  return;
  }
- runBtn.disabled=true;runBtn.textContent='Running…';setStatus('Sending code to secure Python runner','busy');writeOutput('Starting remote Python runner…','empty');
+ executeCode([]);
+}
+async function executeCode(inputs){
+ runBtn.disabled=true;runBtn.textContent='Running…';setStatus('Running Python code','busy');writeOutput('Starting remote Python runner…','empty');
  try{
   const response=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:codeEl.value,inputs})});
   const data=await response.json().catch(()=>({error:'The runner returned an invalid response.'}));
