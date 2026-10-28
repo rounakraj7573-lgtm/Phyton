@@ -75,10 +75,23 @@ function:'def fibonacci(n):\n    a, b = 0, 1\n    result = []\n    for _ in rang
 function updateLines(){const n=codeEl.value.split('\n').length;gutter.textContent=Array.from({length:n},(_,i)=>i+1).join('\n');lineInfo.textContent=n+' line'+(n===1?'':'s')}
 function setStatus(text,state=''){statusText.textContent=text;statusDot.className='status-dot '+state}
 function writeOutput(text,kind='',images=[]){out.className='output'+(kind?' '+kind:'');out.replaceChildren();if(text){const pre=document.createElement('div');pre.textContent=text;out.appendChild(pre)}images.forEach((image,index)=>{const img=document.createElement('img');img.src='data:image/png;base64,'+image;img.alt='Python-generated plot '+(index+1);img.style.cssText='display:block;max-width:100%;height:auto;margin:16px auto;border:1px solid #26354d;border-radius:8px;background:white';out.appendChild(img)})}
+function collectInputPrompts(source){
+ const prompts=[];
+ const re=/\binput\s*\(\s*(?:(["'])(.*?)\1\s*)?\)/gs;
+ let match;
+ while((match=re.exec(source))!==null && prompts.length<50){prompts.push(match[2]||"Input: ")}
+ return prompts;
+}
 async function runCode(){
+ const inputs=[];
+ for(const promptText of collectInputPrompts(codeEl.value)){
+  const value=window.prompt(promptText||"Enter a value for Python input:");
+  if(value===null){setStatus('Run cancelled');return}
+  inputs.push(value);
+ }
  runBtn.disabled=true;runBtn.textContent='Running…';setStatus('Sending code to secure Python runner','busy');writeOutput('Starting remote Python runner…','empty');
  try{
-  const response=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:codeEl.value})});
+  const response=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:codeEl.value,inputs})});
   const data=await response.json().catch(()=>({error:'The runner returned an invalid response.'}));
   if(!response.ok)throw new Error(data.error||data.detail||('Request failed ('+response.status+').'));
   const stdout=data.stdout||'',stderr=data.stderr||'';
