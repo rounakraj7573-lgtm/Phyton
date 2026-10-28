@@ -1,6 +1,6 @@
 import { Sandbox } from "@vercel/sandbox";
 
-const RUNNER_VERSION = "sandbox-plot-output-v7";
+const RUNNER_VERSION = "sandbox-plot-output-v8";
 const MAX_CODE_CHARS = 12000;
 const MAX_OUTPUT_CHARS = 16000;
 const PACKAGE_IMPORTS = [
@@ -41,6 +41,7 @@ export default async function handler(request, response) {
       ? request.body
       : {};
     const code = body.code;
+    const inputs = Array.isArray(body.inputs) ? body.inputs.slice(0, 50).map(value => String(value ?? "")) : [];
     if (typeof code !== "string" || !code.trim()) {
       return response.status(400).json({ error: "Enter Python code first." });
     }
@@ -78,7 +79,16 @@ export default async function handler(request, response) {
         }
       }
       const wrapper = [
-        "import base64, io, runpy",
+        "import base64, io, runpy, builtins, json",
+        "with open('/vercel/sandbox/inputs.json', encoding='utf-8') as input_file:",
+        "    _pystudio_inputs = iter(json.load(input_file))",
+        "def _pystudio_input(prompt=''):",
+        "    print(str(prompt), end='', flush=True)",
+        "    try:",
+        "        return next(_pystudio_inputs)",
+        "    except StopIteration:",
+        "        raise EOFError('No input provided. Run again and enter a value when prompted.')",
+        "builtins.input = _pystudio_input",
         "try:",
         "    import matplotlib",
         "    matplotlib.use('Agg')",
@@ -101,7 +111,8 @@ export default async function handler(request, response) {
       ].join("\n");
       await sandbox.writeFiles([
         { path: "/vercel/sandbox/main.py", content: Buffer.from(code, "utf8") },
-        { path: "/vercel/sandbox/runner.py", content: Buffer.from(wrapper, "utf8") }
+        { path: "/vercel/sandbox/runner.py", content: Buffer.from(wrapper, "utf8") },
+        { path: "/vercel/sandbox/inputs.json", content: Buffer.from(JSON.stringify(inputs), "utf8") }
       ]);
       const result = await sandbox.runCommand({
         cmd: "python",
